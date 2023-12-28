@@ -86,7 +86,7 @@ export default function Home() {
       const suggestions: Recommendation[] = await getSuggestions(debouncedSearchTerm.value);
       setSuggestions(suggestions);
 
-      const result = await search(suggestions.map(it => it.id).splice(20).join(","));
+      const result = await search(suggestions.map(it => it.id).slice(0, 20).join(","));
       setData(result);
     };
 

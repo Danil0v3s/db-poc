@@ -85,6 +85,7 @@ export default function Home() {
   const [selectedSuggestion, setSelectedSuggestion] = useState<Recommendation>(_)
   const [data, setData] = useState<Item[]>([])
   const [quantity, setQuantity] = useState<number>(10)
+  const [copy, setCopy] = useState<boolean>(true)
 
   const debouncedSearchTerm = useDebounce(query, 300)
 
@@ -123,13 +124,13 @@ export default function Home() {
               onSubmit={e => {
                 e.preventDefault()
                 setSuggestions([])
-              } }
+              }}
               query={query.value}
               onInputChange={(e) => setQuery({ value: e, isManual: true })}
               onRecommendationSelected={setSelectedSuggestion}
               recommendations={suggestions}
               onQuantityChange={(e) => setQuantity(e)}
-              />
+            />
           </div>
 
           <div className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -155,7 +156,7 @@ export default function Home() {
                     return (
                       <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                          <div className="flex justify-between">
+                          <div className="flex gap-3">
                             <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} alt={`${item.name}`} />
                             <p className="text-left">{it.cart.refine > 0 ? `+${it.cart.refine}` : ""} {item.name} {parseInt(item.slots) > 0 ? `[${item.slots}]` : ""}</p>
                           </div>
@@ -176,7 +177,14 @@ export default function Home() {
 
                         <td className="px-6 py-4">{new Intl.NumberFormat('pt-BR').format(it.price)}ƶ</td>
                         <td className="px-6 py-4">{it.amount}</td>
-                        <td className="px-6 py-4">{it.vending.map} {it.vending.x}, {it.vending.y}</td>
+                        <td className="flex px-6 py-4 justify-between">
+                          {it.vending.map} {it.vending.x}, {it.vending.y}
+                          <img 
+                            className="cursor-pointer"
+                            onClick={(e) => { navigator.clipboard.writeText(`@loja ${it.vending.char.shopCode}`)}}
+                            src="copy.svg" height={20} width={20} alt="copy"
+                          />
+                        </td>
                         <td className="px-6 py-4">{it.vending.char.name}</td>
                       </tr>
                     )
@@ -210,18 +218,18 @@ function SuggestionsComponent(props: SuggestionProps) {
           type="text"
           id="default-input"
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          />
-          <select
-            id="select-quantity"
-            name="select-quantity"
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            onChange={e => props.onQuantityChange(Number(e.target.value))}
-          >
-            <option value={10}>10</option>
-            <option value={30}>30</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
+        />
+        <select
+          id="select-quantity"
+          name="select-quantity"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          onChange={e => props.onQuantityChange(Number(e.target.value))}
+        >
+          <option value={10}>10</option>
+          <option value={30}>30</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
       </div>
       {
         props.recommendations && props.recommendations.map((it, index) => {

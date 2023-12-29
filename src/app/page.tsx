@@ -2,6 +2,7 @@
 
 import { FormEventHandler, useEffect, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
+import itemNames from "./id_name_slots"
 
 type Query = {
   value: string
@@ -23,6 +24,11 @@ type Item = {
 
 type Cart = {
   nameid: number
+  refine: number
+  card0: number
+  card1: number
+  card2: number
+  card3: number
 }
 
 type Vending = {
@@ -35,6 +41,7 @@ type Vending = {
     shopCode: number
   }
 }
+
 
 async function getSuggestions(query: string): Promise<any> {
   var res = await fetch(`https://roleta.ragna4th.com/db/i/q/in/${query}`);
@@ -96,6 +103,7 @@ export default function Home() {
   useEffect(() => {
     const fn = async () => {
       if (selectedSuggestion.id > 0) {
+        setSuggestions([])
         setQuery({ value: selectedSuggestion.name, isManual: false });
         const result = await search(`${selectedSuggestion.id}`);
         setData(result);
@@ -106,7 +114,7 @@ export default function Home() {
   }, [selectedSuggestion])
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between p-24 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <div className="z-10 max-w-5xl w-full items-center justify-between text-sm lg:flex">
         <div className="card w-full">
           <div className="flex-row w-full pb-2">
@@ -120,29 +128,53 @@ export default function Home() {
               onRecommendationSelected={setSelectedSuggestion}
               recommendations={suggestions} />
           </div>
-          <hr />
-          <div className="flex-row pt-2">
-            <table className="w-full">
-              <thead>
-                <th>ITEM</th>
-                <th>PREÇO</th>
-                <th>QUANTIDADE</th>
-                <th>LOCALIZAÇÃO</th>
-                <th>VENDEDOR</th>
+
+          <div className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <th scope="col" className="px-6 py-3">ITEM</th>
+                <th scope="col" className="px-6 py-3">CARTAS</th>
+                <th scope="col" className="px-6 py-3">PREÇO</th>
+                <th scope="col" className="px-6 py-3">QUANTIDADE</th>
+                <th scope="col" className="px-6 py-3">LOCALIZAÇÃO</th>
+                <th scope="col" className="px-6 py-3">VENDEDOR</th>
               </thead>
-              <tbody>
+              <tbody >
                 {
                   data.map((it, index) => {
+                    // ??????
+                    const item = itemNames[it.cart.nameid.toString()];
+                    const card0 = itemNames[it.cart.card0.toString()];
+                    const card1 = itemNames[it.cart.card1.toString()];
+                    const card2 = itemNames[it.cart.card2.toString()];
+                    const card3 = itemNames[it.cart.card3.toString()];
+
                     return (
-                      <tr key={index}>
-                        <td><img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} /> {it.cart.nameid}</td>
-                        <td>{it.price}ƶ</td>
-                        <td>{it.amount}</td>
-                        <td>
-                          <p>{it.vending.map} {it.vending.x}, {it.vending.y}</p>
-                          <span>{it.vending.char.shopCode}</span>
+                      <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                          <div className="flex justify-between">
+                            <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} />
+                            <p className="text-left">{it.cart.refine > 0 ? `+${it.cart.refine}` : ""} {item.name} {parseInt(item.slots) > 0 ? `[${item.slots}]` : ""}</p>
+                          </div>
+                        </th>
+
+                        <td className="px-6 py-4">
+                          {
+                            card0 && (
+                              <div className="group relative flex justify-center">
+                                <button type="button">
+                                  <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.card0}`} height={24} width={24} />
+                                </button>
+                                <span className="absolute top-8 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">{card0.name}</span>
+                              </div>
+                            )
+                          }
                         </td>
-                        <td>{it.vending.char.name}</td>
+
+                        <td className="px-6 py-4">{new Intl.NumberFormat('pt-BR').format(it.price)}ƶ</td>
+                        <td className="px-6 py-4">{it.amount}</td>
+                        <td className="px-6 py-4">{it.vending.map} {it.vending.x}, {it.vending.y}</td>
+                        <td className="px-6 py-4">{it.vending.char.name}</td>
                       </tr>
                     )
                   })
@@ -167,7 +199,14 @@ type SuggestionProps = {
 function SuggestionsComponent(props: SuggestionProps) {
   return (
     <form onSubmit={props.onSubmit}>
-      <input className="w-full" value={props.query} placeholder="Search" onChange={e => props.onInputChange(e.target.value)} />
+      <div className="mb-6">
+        <input value={props.query}
+          placeholder="Search"
+          onChange={e => props.onInputChange(e.target.value)}
+          type="text"
+          id="default-input"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+      </div>
       {
         props.recommendations && props.recommendations.map((it, index) => {
           return (<p key={index} onClick={() => props.onRecommendationSelected(it)}>{it.name}</p>)

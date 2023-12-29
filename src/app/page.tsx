@@ -2,7 +2,7 @@
 
 import { FormEventHandler, useEffect, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
-import itemNames from "./id_name_slots"
+import itemNames, { ItemNameSlot } from "./id_name_slots"
 
 type Query = {
   value: string
@@ -171,22 +171,18 @@ export default function Home() {
                       <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                           <div className="flex gap-3">
-                            <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} alt={`${item.name}`} />
+                            <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} alt={item.name} />
                             <p className="text-left">{it.cart.refine > 0 ? `+${it.cart.refine}` : ""} {item.name} {parseInt(item.slots) > 0 ? `[${item.slots}]` : ""}</p>
                           </div>
                         </th>
 
                         <td className="px-6 py-4">
-                          {
-                            card0 && (
-                              <div className="group relative flex justify-center">
-                                <button type="button">
-                                  <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.card0}`} height={24} width={24} alt={`${item.name}`} />
-                                </button>
-                                <span className="absolute top-8 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">{card0.name}</span>
-                              </div>
-                            )
-                          }
+                          <div className="flex flex-row">
+                            <CardElement item={card0} id={it.cart.card0} />
+                            <CardElement item={card1} id={it.cart.card1} />
+                            <CardElement item={card2} id={it.cart.card2} />
+                            <CardElement item={card3} id={it.cart.card3} />
+                          </div>
                         </td>
 
                         <td className="px-6 py-4">{new Intl.NumberFormat('pt-BR').format(it.price)}ƶ</td>
@@ -255,5 +251,20 @@ function SuggestionsComponent(props: SuggestionProps) {
         })
       }
     </form>
+  )
+}
+
+type CardProps = {
+  id: number
+  item: ItemNameSlot
+}
+function CardElement(props: CardProps) {
+  return props.item && (
+    <div className="group relative flex justify-center">
+      <button type="button">
+        <img src={`https://roleta.ragna4th.com/db/i/ic/${props.id}`} height={24} width={24} alt={props.item.name} />
+      </button>
+      <span className="absolute top-8 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">{props.item.name}</span>
+    </div>
   )
 }

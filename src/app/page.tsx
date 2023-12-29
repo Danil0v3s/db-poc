@@ -199,7 +199,7 @@ export default function Home() {
                         <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                           <div className="flex gap-3">
                             <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} alt={item.name} />
-                            <p className="text-left">{it.cart.refine > 0 ? `+${it.cart.refine}` : ""} {item.name} {parseInt(item.slots) > 0 ? `[${item.slots}]` : ""}</p>
+                            <a href={`https://www.divine-pride.net/database/item/${it.cart.nameid}`} target="_blank">{it.cart.refine > 0 ? `+${it.cart.refine}` : ""} {item.name} {parseInt(item.slots) > 0 ? `[${item.slots}]` : ""}</a>
                           </div>
                         </th>
 

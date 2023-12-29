@@ -50,14 +50,14 @@ async function getSuggestions(query: string): Promise<any> {
   return data;
 }
 
-async function search(query: string): Promise<any> {
+async function search(query: string, items: number): Promise<any> {
   var res = await fetch(`https://api.ragna4th.com/db/market`, {
     method: 'post',
     headers: {
       "content-type": "application/json"
     },
     body: JSON.stringify({
-      limit: 10,
+      limit: items,
       filters: [
         {
           field: "nameid",
@@ -84,6 +84,8 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState<Recommendation[]>([])
   const [selectedSuggestion, setSelectedSuggestion] = useState<Recommendation>(_)
   const [data, setData] = useState<Item[]>([])
+  const [quantity, setQuantity] = useState<number>(10)
+  const [copy, setCopy] = useState<boolean>(true)
 
   const debouncedSearchTerm = useDebounce(query, 300)
 
@@ -93,25 +95,25 @@ export default function Home() {
       const suggestions: Recommendation[] = await getSuggestions(debouncedSearchTerm.value);
       setSuggestions(suggestions);
 
-      const result = await search(suggestions.map(it => it.id).slice(0, 20).join(","));
+      const result = await search(suggestions.map(it => it.id).slice(0, 20).join(","), quantity);
       setData(result);
     };
 
     fn();
-  }, [debouncedSearchTerm])
+  }, [debouncedSearchTerm, quantity])
 
   useEffect(() => {
     const fn = async () => {
       if (selectedSuggestion.id > 0) {
         setSuggestions([])
         setQuery({ value: selectedSuggestion.name, isManual: false });
-        const result = await search(`${selectedSuggestion.id}`);
+        const result = await search(`${selectedSuggestion.id}`, quantity);
         setData(result);
       }
     };
 
     fn();
-  }, [selectedSuggestion])
+  }, [selectedSuggestion, quantity])
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
@@ -120,13 +122,15 @@ export default function Home() {
           <div className="flex-row w-full pb-2">
             <SuggestionsComponent
               onSubmit={e => {
-                e.preventDefault();
-                setSuggestions([]);
+                e.preventDefault()
+                setSuggestions([])
               }}
               query={query.value}
               onInputChange={(e) => setQuery({ value: e, isManual: true })}
               onRecommendationSelected={setSelectedSuggestion}
-              recommendations={suggestions} />
+              recommendations={suggestions}
+              onQuantityChange={(e) => setQuantity(e)}
+            />
           </div>
 
           <div className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -152,8 +156,8 @@ export default function Home() {
                     return (
                       <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                          <div className="flex justify-between">
-                            <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} />
+                          <div className="flex gap-3">
+                            <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.nameid}`} height={24} width={24} alt={`${item.name}`} />
                             <p className="text-left">{it.cart.refine > 0 ? `+${it.cart.refine}` : ""} {item.name} {parseInt(item.slots) > 0 ? `[${item.slots}]` : ""}</p>
                           </div>
                         </th>
@@ -163,7 +167,7 @@ export default function Home() {
                             card0 && (
                               <div className="group relative flex justify-center">
                                 <button type="button">
-                                  <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.card0}`} height={24} width={24} />
+                                  <img src={`https://roleta.ragna4th.com/db/i/ic/${it.cart.card0}`} height={24} width={24} alt={`${item.name}`} />
                                 </button>
                                 <span className="absolute top-8 scale-0 transition-all rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">{card0.name}</span>
                               </div>
@@ -173,7 +177,14 @@ export default function Home() {
 
                         <td className="px-6 py-4">{new Intl.NumberFormat('pt-BR').format(it.price)}ƶ</td>
                         <td className="px-6 py-4">{it.amount}</td>
-                        <td className="px-6 py-4">{it.vending.map} {it.vending.x}, {it.vending.y}</td>
+                        <td className="flex px-6 py-4 justify-between">
+                          {it.vending.map} {it.vending.x}, {it.vending.y}
+                          <img 
+                            className="cursor-pointer"
+                            onClick={(e) => { navigator.clipboard.writeText(`@loja ${it.vending.char.shopCode}`)}}
+                            src="copy.svg" height={20} width={20} alt="copy"
+                          />
+                        </td>
                         <td className="px-6 py-4">{it.vending.char.name}</td>
                       </tr>
                     )
@@ -194,18 +205,31 @@ type SuggestionProps = {
   onSubmit: FormEventHandler<HTMLFormElement> | undefined;
   onInputChange: (value: string) => void;
   onRecommendationSelected: (rec: Recommendation) => void;
+  onQuantityChange: (value: number) => void;
 }
 
 function SuggestionsComponent(props: SuggestionProps) {
   return (
     <form onSubmit={props.onSubmit}>
-      <div className="mb-6">
+      <div className="mb-6 flex">
         <input value={props.query}
           placeholder="Search"
           onChange={e => props.onInputChange(e.target.value)}
           type="text"
           id="default-input"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        />
+        <select
+          id="select-quantity"
+          name="select-quantity"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          onChange={e => props.onQuantityChange(Number(e.target.value))}
+        >
+          <option value={10}>10</option>
+          <option value={30}>30</option>
+          <option value={50}>50</option>
+          <option value={100}>100</option>
+        </select>
       </div>
       {
         props.recommendations && props.recommendations.map((it, index) => {

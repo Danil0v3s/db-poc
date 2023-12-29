@@ -50,7 +50,16 @@ async function getSuggestions(query: string): Promise<any> {
   return data;
 }
 
-async function search(query: string, items: number): Promise<any> {
+async function search(nameIds: string, items: number, offset: number = 0): Promise<any> {
+  const filters = []
+  if (nameIds.length > 0) {
+    filters.push({
+      field: "nameid",
+      operator: "in",
+      value: `[${nameIds}]`
+    });
+  }
+
   var res = await fetch(`https://api.ragna4th.com/db/market`, {
     method: 'post',
     headers: {
@@ -58,13 +67,8 @@ async function search(query: string, items: number): Promise<any> {
     },
     body: JSON.stringify({
       limit: items,
-      filters: [
-        {
-          field: "nameid",
-          operator: "in",
-          value: `[${query}]`
-        }
-      ],
+      offset: offset * items,
+      filters,
       order: {
         by: "price",
         direction: "asc"
@@ -115,6 +119,16 @@ export default function Home() {
     fn();
   }, [selectedSuggestion, quantity])
 
+
+  useEffect(() => {
+    const fn = async () => {
+      var items = await search("", 10);
+      setData(items);
+    };
+
+    fn();
+  }, [])
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <div className="z-10 max-w-5xl w-full items-center justify-between text-sm lg:flex">
@@ -140,7 +154,7 @@ export default function Home() {
                 <th scope="col" className="px-6 py-3">CARTAS</th>
                 <th scope="col" className="px-6 py-3">PREÇO</th>
                 <th scope="col" className="px-6 py-3">QUANTIDADE</th>
-                <th scope="col" className="px-6 py-3">LOCALIZAÇÃO</th>
+                <th scope="col" className="px-6 py-3">LINK DA LOJA</th>
                 <th scope="col" className="px-6 py-3">VENDEDOR</th>
               </thead>
               <tbody >
@@ -178,12 +192,16 @@ export default function Home() {
                         <td className="px-6 py-4">{new Intl.NumberFormat('pt-BR').format(it.price)}ƶ</td>
                         <td className="px-6 py-4">{it.amount}</td>
                         <td className="flex px-6 py-4 justify-between">
-                          {it.vending.map} {it.vending.x}, {it.vending.y}
-                          <img 
-                            className="cursor-pointer"
-                            onClick={(e) => { navigator.clipboard.writeText(`@loja ${it.vending.char.shopCode}`)}}
-                            src="copy.svg" height={20} width={20} alt="copy"
-                          />
+                          <div className="w-full">
+                            <button onClick={(e) => { navigator.clipboard.writeText(`@loja ${it.vending.char.shopCode}`) }}
+                              type="button"
+                              className="w-full px-3 py-2 text-xs font-xs text-center inline-flex items-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-white me-2">
+                                <path fillRule="evenodd" d="M10.986 3H12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h1.014A2.25 2.25 0 0 1 7.25 1h1.5a2.25 2.25 0 0 1 2.236 2ZM9.5 4v-.75a.75.75 0 0 0-.75-.75h-1.5a.75.75 0 0 0-.75.75V4h3Z" clipRule="evenodd" />
+                              </svg>
+                              {it.vending.char.shopCode}
+                            </button>
+                          </div>
                         </td>
                         <td className="px-6 py-4">{it.vending.char.name}</td>
                       </tr>

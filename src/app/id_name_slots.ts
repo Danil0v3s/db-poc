@@ -112077,8 +112077,7 @@ const dict: ItemNameDict = {
     "1230000": {
         "name": "IDTest ammo",
         "slots": "0"
-    },
-    "": {}
+    }
 }
 
 export default dict;

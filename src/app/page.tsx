@@ -1,10 +1,9 @@
 'use client'
 
-import { FormEventHandler, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
-import itemNames, { ItemNameSlot } from "./id_name_slots"
 import { load } from 'cheerio';
-import { ItemHistory, Cart, Item, Query, Recommendation, Vending } from "./types";
+import { ItemHistory, Item, Query, Recommendation } from "./types";
 import SuggestionsComponent from "./components/searchField";
 import ItemsTable from "./components/itemsTable";
 import ItemHistoryTable from "./components/itemHistoryTable";
@@ -89,10 +88,10 @@ export default function Home() {
     const fn = async () => {
       if (debouncedSearchTerm.value.length < 3 || !debouncedSearchTerm.isManual) return;
       const suggestions: Recommendation[] = await getSuggestions(debouncedSearchTerm.value);
-      setSuggestions(suggestions.slice(0, 20));
+      setSuggestions(suggestions);
 
       setLoading(true);
-      const result = await search(suggestions.map(it => it.id).slice(0, 20).join(","), quantity);
+      const result = await search(suggestions.map(it => it.id).join(","), quantity);
       let uniqueIds: number[] = [];
       result.reduce((result, item, index, array) => {
         if (!result.includes(item.cart.nameid)) {

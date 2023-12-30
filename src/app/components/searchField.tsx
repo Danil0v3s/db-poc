@@ -35,11 +35,14 @@ export default function SuggestionsComponent(props: SuggestionProps) {
             </div>
             {
                 props.recommendations.length > 0 && (
-                    <div className="absolute w-full bg-gray-600 border border-gray-300 text-white-900 text-sm rounded-lg flex group flex-col bg-opacity-90">
+                    <div className="absolute w-full border border-gray-300 text-white-900 text-sm rounded-lg flex group flex-col backdrop-blur-sm bg-black/80 max-h-80 overflow-y-auto">
                         {
                             props.recommendations.map((it, index) => {
                                 return (
-                                    <div className="px-2 py-2" key={index} onClick={() => props.onRecommendationSelected(it)}>{it.name}</div>
+                                    <div className="flex px-2 py-2 gap-2" key={index} onClick={() => props.onRecommendationSelected(it)}>
+                                        <img src={`https://roleta.ragna4th.com/db/i/ic/${it.id}`} height={24} width={24} alt={it.name} />
+                                        {it.name}
+                                    </div>
                                 )
                             })
                         }

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@uidotdev/usehooks": "^2.4.1",
+    "cheerio": "^1.0.0-rc.12",
     "next": "14.0.4",
     "react": "^18",
     "react-dom": "^18"

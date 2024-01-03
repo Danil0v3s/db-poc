@@ -3,12 +3,10 @@
 import { useEffect, useState } from "react"
 import { useDebounce } from "@uidotdev/usehooks"
 import { load } from 'cheerio';
-import { ItemHistory, Item, Query, Recommendation } from "./types";
+import { ItemHistory, Item, Query, Recommendation, TableType } from "./types";
 import SuggestionsComponent from "./components/searchField";
 import ItemsTable from "./components/itemsTable";
 import ItemHistoryTable from "./components/itemHistoryTable";
-
-
 
 async function getSuggestions(query: string): Promise<any> {
   var res = await fetch(`https://roleta.ragna4th.com/db/i/q/in/${query}`);
@@ -69,6 +67,19 @@ async function scrap(nameid: number): Promise<ItemHistory> {
   }
 }
 
+function getUniqueIds(result: Item[]): number[] {
+  let uniqueIds: number[] = [];
+  result.reduce((result, item, index, array) => {
+    if (!result.includes(item.cart.nameid)) {
+      result.push(item.cart.nameid);
+    }
+
+    return result;
+  }, uniqueIds);
+
+  return uniqueIds;
+}
+
 export default function Home() {
   const _: Recommendation = { id: 0, name: '' };
 
@@ -81,6 +92,7 @@ export default function Home() {
   const [quantity, setQuantity] = useState<number>(10)
   const [uniqueIds, setUniqueIds] = useState<number[]>([])
   const [itemHistory, setItemHistory] = useState<ItemHistory[]>([]);
+  const [tableType, setTableType] = useState(TableType.Results);
 
   const debouncedSearchTerm = useDebounce(query, 300)
 
@@ -92,15 +104,7 @@ export default function Home() {
 
       setLoading(true);
       const result = await search(suggestions.map(it => it.id).join(","), quantity);
-      let uniqueIds: number[] = [];
-      result.reduce((result, item, index, array) => {
-        if (!result.includes(item.cart.nameid)) {
-          result.push(item.cart.nameid);
-        }
-
-        return result;
-      }, uniqueIds);
-      setUniqueIds(uniqueIds);
+      setUniqueIds(getUniqueIds(result));
       setLoading(false);
       setData(result);
     };
@@ -118,6 +122,7 @@ export default function Home() {
         const result = await search(`${selectedSuggestion.id}`, quantity);
         setLoading(false);
         setData(result);
+        setUniqueIds(getUniqueIds(result));
       }
     };
 
@@ -146,27 +151,42 @@ export default function Home() {
   }, [uniqueIds]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-      <div className="z-10 max-w-5xl w-full items-center justify-between text-sm lg:flex">
-        <div className="card w-full">
-          <div className="flex-row w-full pb-2">
+    <main className="dark flex min-h-screen flex-col items-center justify-between p-24 dark:bg-gray-900 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+      <div className="w-full items-center justify-between text-sm lg:flex">
+        <div className="w-full">
+          <div className="flex-row">
             <SuggestionsComponent
               onSubmit={e => {
                 e.preventDefault()
                 setSuggestions([])
               }}
+              selectedTabIndex={tableType}
+              onTabSelected={(type) => setTableType(type)}
               query={query.value}
               onInputChange={(e) => setQuery({ value: e, isManual: true })}
               onRecommendationSelected={setSelectedSuggestion}
               recommendations={suggestions}
               onQuantityChange={(e) => setQuantity(e)}
+
             />
           </div>
 
-          <ItemsTable data={data} isLoading={isLoading} />
-          <ItemHistoryTable itemHistory={itemHistory} isLoadingHistory={isLoadingHistory} />
+          {tableType == TableType.Results && <ItemsTable data={data} isLoading={isLoading} />}
+          {tableType == TableType.PriceHistory && <ItemHistoryTable itemHistory={itemHistory} isLoadingHistory={isLoadingHistory} />}
         </div>
       </div>
+      <footer className="fixed bottom-0 left-0 z-20 w-full p-4 bg-white border-t border-gray-200 shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800 dark:border-gray-600">
+        <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2023 <a href="https://github.com/Danil0v3s" className="hover:underline">Danil0v3s</a>
+        </span>
+        <ul className="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
+          <li>
+            <a href="https://github.com/Danil0v3s" target="_blank" className="hover:underline me-4 md:me-6">GitHub</a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/daniloleemes/" target="_blank" className="hover:underline me-4 md:me-6">LinkedIn</a>
+          </li>
+        </ul>
+      </footer>
     </main>
   )
 }

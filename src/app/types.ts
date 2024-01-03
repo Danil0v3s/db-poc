@@ -43,3 +43,7 @@ export type ItemHistory = {
     highestSold: number,
     quantitySold: number,
 }
+
+export enum TableType {
+    Results = 0, PriceHistory = 1
+  }

@@ -138,6 +138,7 @@ export default function Home() {
       setLoadingFavorites(true);
       const itemsSellingHistory = await Promise.all(favorites.map(it => scrap(it)));
       setLoadingFavorites(false);
+      localStorage.setItem("favorites", JSON.stringify(favorites));
       setFavoritesHistory(itemsSellingHistory);
     }
 
@@ -193,14 +194,14 @@ export default function Home() {
 
           {
             tableType == TableType.Results && <ItemsTable data={data} isLoading={isLoading}
-              onAddToFavorites={(id) => {  
-                if (!favorites.includes(id)) favorites.push(id);
-                localStorage.setItem("favorites", JSON.stringify(favorites))
-                setFavorites(favorites);
+              onAddToFavorites={(id) => {
+                if (!favorites.includes(id)) {
+                  setFavorites([id, ...favorites]);
+                }
               }}
               onFilterSelect={(id) => {
                 const item = itemNames[`${id}`];
-                setSelectedSuggestion({ id, name: item.name})
+                setSelectedSuggestion({ id, name: item.name })
               }} />
           }
           {tableType == TableType.PriceHistory && <ItemHistoryTable itemHistory={itemHistory} isLoadingHistory={isLoadingHistory} />}

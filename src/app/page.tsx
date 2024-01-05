@@ -7,6 +7,7 @@ import { ItemHistory, Item, Query, Recommendation, TableType } from "./types";
 import SuggestionsComponent from "./components/searchField";
 import ItemsTable from "./components/itemsTable";
 import ItemHistoryTable from "./components/itemHistoryTable";
+import itemNames from "./id_name_slots"
 
 async function getSuggestions(query: string): Promise<any> {
   var res = await fetch(`https://roleta.ragna4th.com/db/i/q/in/${query}`);
@@ -86,13 +87,16 @@ export default function Home() {
   const [query, setQuery] = useState<Query>({ isManual: false, value: '' })
   const [isLoading, setLoading] = useState(false)
   const [isLoadingHistory, setLoadingHistory] = useState(false)
+  const [isLoadingFavorites, setLoadingFavorites] = useState(false)
   const [suggestions, setSuggestions] = useState<Recommendation[]>([])
   const [selectedSuggestion, setSelectedSuggestion] = useState<Recommendation>(_)
   const [data, setData] = useState<Item[]>([])
   const [quantity, setQuantity] = useState<number>(10)
   const [uniqueIds, setUniqueIds] = useState<number[]>([])
   const [itemHistory, setItemHistory] = useState<ItemHistory[]>([]);
+  const [favoritesHistory, setFavoritesHistory] = useState<ItemHistory[]>([]);
   const [tableType, setTableType] = useState(TableType.Results);
+  const [favorites, setFavorites] = useState<number[]>([]);
 
   const debouncedSearchTerm = useDebounce(query, 300)
 
@@ -131,10 +135,26 @@ export default function Home() {
 
   useEffect(() => {
     const fn = async () => {
+      setLoadingFavorites(true);
+      const itemsSellingHistory = await Promise.all(favorites.map(it => scrap(it)));
+      setLoadingFavorites(false);
+      setFavoritesHistory(itemsSellingHistory);
+    }
+
+    fn();
+  }, [favorites]);
+
+  useEffect(() => {
+    const fn = async () => {
       setLoading(true);
       var items = await search("", 10);
       setLoading(false);
       setData(items);
+
+      const favorites = JSON.parse(localStorage.getItem("favorites") ?? "[]");
+      if (favorites.length > 0) {
+        setFavorites(favorites);
+      }
     };
 
     fn();
@@ -171,8 +191,20 @@ export default function Home() {
             />
           </div>
 
-          {tableType == TableType.Results && <ItemsTable data={data} isLoading={isLoading} />}
+          {
+            tableType == TableType.Results && <ItemsTable data={data} isLoading={isLoading}
+              onAddToFavorites={(id) => {  
+                if (!favorites.includes(id)) favorites.push(id);
+                localStorage.setItem("favorites", JSON.stringify(favorites))
+                setFavorites(favorites);
+              }}
+              onFilterSelect={(id) => {
+                const item = itemNames[`${id}`];
+                setSelectedSuggestion({ id, name: item.name})
+              }} />
+          }
           {tableType == TableType.PriceHistory && <ItemHistoryTable itemHistory={itemHistory} isLoadingHistory={isLoadingHistory} />}
+          {tableType == TableType.Favorites && <ItemHistoryTable itemHistory={favoritesHistory} isLoadingHistory={isLoadingFavorites} />}
         </div>
       </div>
       <footer className="fixed bottom-0 left-0 z-20 w-full p-4 bg-white border-t border-gray-200 shadow md:flex md:items-center md:justify-between md:p-6 dark:bg-gray-800 dark:border-gray-600">

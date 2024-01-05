@@ -45,5 +45,5 @@ export type ItemHistory = {
 }
 
 export enum TableType {
-    Results = 0, PriceHistory = 1
+    Results = 0, PriceHistory = 1, Favorites = 2
   }

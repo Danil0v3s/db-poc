@@ -1,15 +1,18 @@
 import { Item } from "../types"
-import itemNames, { ItemNameSlot } from "../id_name_slots"
+import itemNames from "../id_name_slots"
 import CardElement from "./itemCardElement"
 import { Row, Table, TableBody, TableHead } from "./table"
 import LoadingSpinner from "./loadingSpinner"
+import { HiHeart, HiFilter } from 'react-icons/hi';
 
 export type ItemTableProps = {
     data: Item[]
-    isLoading: boolean
+    isLoading: boolean,
+    onAddToFavorites: (id: number) => void,
+    onFilterSelect: (id: number) => void
 }
 
-export default function ItemsTable({ data, isLoading }: ItemTableProps) {
+export default function ItemsTable({ data, isLoading, onAddToFavorites, onFilterSelect }: ItemTableProps) {
     return (
         <Table>
             <TableHead>
@@ -19,6 +22,7 @@ export default function ItemsTable({ data, isLoading }: ItemTableProps) {
                 <th scope="col" className="px-6 py-3">QUANTIDADE</th>
                 <th scope="col" className="px-6 py-3">LINK DA LOJA</th>
                 <th scope="col" className="px-6 py-3">VENDEDOR</th>
+                <th scope="col" className="px-6 py-3">AÇÕES</th>
             </TableHead>
             <TableBody >
                 {
@@ -78,6 +82,12 @@ export default function ItemsTable({ data, isLoading }: ItemTableProps) {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">{it.vending.char.name}</td>
+                                <td className="px-6 py-4">
+                                    <div className="flex flex-row gap-2">
+                                        <a href="#" className="bg-blue-700 rounded-lg p-2" onClick={() => onAddToFavorites(it.cart.nameid)}><HiHeart /></a>
+                                        <a href="#" className="bg-blue-700 rounded-lg p-2" onClick={() => onFilterSelect(it.cart.nameid)}><HiFilter /></a>
+                                    </div>
+                                </td>
                             </Row>
                         )
                     })

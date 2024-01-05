@@ -1,6 +1,6 @@
 import { FormEventHandler } from "react";
 import { Recommendation, TableType } from "../types";
-import { HiViewList, HiTrendingUp } from 'react-icons/hi';
+import { HiViewList, HiTrendingUp, HiHeart } from 'react-icons/hi';
 
 export type SuggestionProps = {
     recommendations: Recommendation[];
@@ -75,6 +75,12 @@ function TabGroup({ selectedIndex = 1, onTabChange }: TabGroupProps) {
                 <a href="#" className={`${tabClasses} ${selectedIndex == 1 ? selectedClasses : ''}`} onClick={() => onTabChange(TableType.PriceHistory)}>
                     <HiTrendingUp />
                     Histórico de Preços
+                </a>
+            </li>
+            <li className="me-2">
+                <a href="#" className={`${tabClasses} ${selectedIndex == 2 ? selectedClasses : ''}`} onClick={() => onTabChange(TableType.Favorites)}>
+                    <HiHeart />
+                    Favoritos
                 </a>
             </li>
         </ul>

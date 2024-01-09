@@ -28,7 +28,7 @@ export default function ItemsTable({ data, isLoading, onAddToFavorites, onFilter
                 {
                     isLoading && (
                         <Row>
-                            <th scope="row" colSpan={6} className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                            <th scope="row" colSpan={7} className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 <LoadingSpinner />
                             </th>
                         </Row>
@@ -37,7 +37,7 @@ export default function ItemsTable({ data, isLoading, onAddToFavorites, onFilter
                 {
                     data.length == 0 && !isLoading && (
                         <Row>
-                            <th scope="row" colSpan={6} className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">Sua pesquisa não retornou resultados</th>
+                            <th scope="row" colSpan={7} className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">Sua pesquisa não retornou resultados</th>
                         </Row>
                     )
                 }

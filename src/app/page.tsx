@@ -81,6 +81,12 @@ function getUniqueIds(result: Item[]): number[] {
   return uniqueIds;
 }
 
+function getFavorites(): number[] {
+  if (typeof localStorage !== "undefined")
+    return JSON.parse(localStorage.getItem("favorites") ?? "[]")
+  else return [];
+}
+
 export default function Home() {
   const _: Recommendation = { id: 0, name: '' };
 
@@ -96,7 +102,7 @@ export default function Home() {
   const [itemHistory, setItemHistory] = useState<ItemHistory[]>([]);
   const [favoritesHistory, setFavoritesHistory] = useState<ItemHistory[]>([]);
   const [tableType, setTableType] = useState(TableType.Results);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<number[]>(getFavorites());
 
   const debouncedSearchTerm = useDebounce(query, 300)
 
@@ -138,8 +144,9 @@ export default function Home() {
       setLoadingFavorites(true);
       const itemsSellingHistory = await Promise.all(favorites.map(it => scrap(it)));
       setLoadingFavorites(false);
-      localStorage.setItem("favorites", JSON.stringify(favorites));
       setFavoritesHistory(itemsSellingHistory);
+
+      localStorage.setItem("favorites", JSON.stringify(favorites));
     }
 
     fn();
@@ -152,9 +159,9 @@ export default function Home() {
       setLoading(false);
       setData(items);
 
-      const favorites = JSON.parse(localStorage.getItem("favorites") ?? "[]");
+      const favorites = getFavorites();
       if (favorites.length > 0) {
-        setFavorites(favorites);
+        setFavorites([...favorites]);
       }
     };
 

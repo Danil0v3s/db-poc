@@ -8,6 +8,12 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "eslintConfig": {
+    "globals": {
+      "window": true,
+      "localStorage": true
+    }
+  },
   "dependencies": {
     "@uidotdev/usehooks": "^2.4.1",
     "cheerio": "^1.0.0-rc.12",

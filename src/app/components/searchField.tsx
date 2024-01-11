@@ -47,7 +47,7 @@ function Input(props: InputProps) {
                                     return (
                                         <div className="flex px-2 py-2 gap-2" key={index} onClick={() => props.onRecommendationSelected(it)}>
                                             <img src={`https://roleta.ragna4th.com/db/i/ic/${it.id}`} height={24} width={24} alt={it.name} />
-                                            {it.name}
+                                            {it.id} - {it.name}
                                         </div>
                                     )
                                 })
